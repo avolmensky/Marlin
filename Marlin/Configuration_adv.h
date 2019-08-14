@@ -653,13 +653,13 @@
 
 // @section homing
 
-/**
- * Homing Procedure
- * Homing (G28) does an indefinite move towards the endstops to establish
- * the position of the toolhead relative to the workspace.
- */
-
-//#define SENSORLESS_BACKOFF_MM  { 2, 2 }     // (mm) Backoff from endstops before sensorless homing
+// Homing hits each endstop, retracts by these distances, then does a slower bump.
+#define X_HOME_BUMP_MM 5
+#define Y_HOME_BUMP_MM 5
+#define Z_HOME_BUMP_MM 2
+#define HOMING_BUMP_DIVISOR { 2, 2, 4 }  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+#define QUICK_HOME                       // If homing includes X and Y, do a diagonal move initially
+//#define HOMING_BACKOFF_MM { 2, 2, 2 }  // (mm) Move away from the endstops after homing
 
 #define HOMING_BUMP_MM      { 5, 5, 2 }       // (mm) Backoff from endstops after first bump
 #define HOMING_BUMP_DIVISOR { 2, 2, 4 }       // Re-Bump Speed Divisor (Divides the Homing Feedrate)
@@ -691,7 +691,7 @@
 
   // Safety: The probe needs time to recognize the command.
   //         Minimum command delay (ms). Enable and increase if needed.
-  //#define BLTOUCH_DELAY 500
+  // #define BLTOUCH_DELAY 500
 
   /**
    * Settings for BLTOUCH Classic 1.2, 1.3 or BLTouch Smart 1.0, 2.0, 2.2, 3.0, 3.1, and most clones:
@@ -717,7 +717,7 @@
    * differs, a mode set eeprom write will be completed at initialization.
    * Use the option below to force an eeprom write to a V3.1 probe regardless.
    */
-  //#define BLTOUCH_SET_5V_MODE
+  #define BLTOUCH_SET_5V_MODE
 
   /**
    * Safety: Activate if connecting a probe with an unknown voltage mode.
@@ -853,7 +853,7 @@
 #define DEFAULT_STEPPER_DEACTIVE_TIME 120
 #define DISABLE_INACTIVE_X true
 #define DISABLE_INACTIVE_Y true
-#define DISABLE_INACTIVE_Z true  // Set 'false' if the nozzle could fall onto your printed part!
+#define DISABLE_INACTIVE_Z false  // Set to false if the nozzle will fall down on your printed part when print has finished.
 #define DISABLE_INACTIVE_E true
 
 // If the Nozzle or Bed falls when the Z stepper is disabled, set its resting position here.
@@ -1301,7 +1301,7 @@
   //#define LONG_FILENAME_HOST_SUPPORT
 
   // Enable this option to scroll long filenames in the SD card menu
-  //#define SCROLL_LONG_FILENAMES
+  #define SCROLL_LONG_FILENAMES
 
   // Leave the heaters on after Stop Print (not recommended!)
   //#define SD_ABORT_NO_COOLDOWN
@@ -1663,7 +1663,7 @@
  *
  * Warning: Does not respect endstops!
  */
-//#define BABYSTEPPING
+#define BABYSTEPPING
 #if ENABLED(BABYSTEPPING)
   //#define INTEGRATED_BABYSTEPPING         // EXPERIMENTAL integration of babystepping into the Stepper ISR
   //#define BABYSTEP_WITHOUT_HOMING
@@ -1674,7 +1674,7 @@
   #define BABYSTEP_MULTIPLICATOR_Z  1       // (steps or mm) Steps or millimeter distance for each Z babystep
   #define BABYSTEP_MULTIPLICATOR_XY 1       // (steps or mm) Steps or millimeter distance for each XY babystep
 
-  //#define DOUBLECLICK_FOR_Z_BABYSTEPPING  // Double-click on the Status Screen for Z Babystepping.
+  #define DOUBLECLICK_FOR_Z_BABYSTEPPING    // Double-click on the Status Screen for Z Babystepping.
   #if ENABLED(DOUBLECLICK_FOR_Z_BABYSTEPPING)
     #define DOUBLECLICK_MAX_INTERVAL 1250   // Maximum interval between clicks, in milliseconds.
                                             // Note: Extra time may be added to mitigate controller latency.
@@ -1686,7 +1686,7 @@
 
   //#define BABYSTEP_DISPLAY_TOTAL          // Display total babysteps since last G28
 
-  //#define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
+  #define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
   #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
     //#define BABYSTEP_HOTEND_Z_OFFSET      // For multiple hotends, babystep relative Z offsets
     //#define BABYSTEP_ZPROBE_GFX_OVERLAY   // Enable graphical overlay on Z-offset editor
@@ -2510,22 +2510,19 @@
    * Set *_SERIAL_TX_PIN and *_SERIAL_RX_PIN to match for all drivers
    * on the same serial port, either here or in your board's pins file.
    */
-  //#define  X_SLAVE_ADDRESS 0
-  //#define  Y_SLAVE_ADDRESS 0
-  //#define  Z_SLAVE_ADDRESS 0
-  //#define X2_SLAVE_ADDRESS 0
-  //#define Y2_SLAVE_ADDRESS 0
-  //#define Z2_SLAVE_ADDRESS 0
-  //#define Z3_SLAVE_ADDRESS 0
-  //#define Z4_SLAVE_ADDRESS 0
-  //#define E0_SLAVE_ADDRESS 0
-  //#define E1_SLAVE_ADDRESS 0
-  //#define E2_SLAVE_ADDRESS 0
-  //#define E3_SLAVE_ADDRESS 0
-  //#define E4_SLAVE_ADDRESS 0
-  //#define E5_SLAVE_ADDRESS 0
-  //#define E6_SLAVE_ADDRESS 0
-  //#define E7_SLAVE_ADDRESS 0
+  #define  X_SLAVE_ADDRESS 0
+  #define  Y_SLAVE_ADDRESS 1
+  #define  Z_SLAVE_ADDRESS 2
+  #define X2_SLAVE_ADDRESS 0
+  #define Y2_SLAVE_ADDRESS 0
+  #define Z2_SLAVE_ADDRESS 0
+  #define Z3_SLAVE_ADDRESS 0
+  #define E0_SLAVE_ADDRESS 3
+  #define E1_SLAVE_ADDRESS 0
+  #define E2_SLAVE_ADDRESS 0
+  #define E3_SLAVE_ADDRESS 0
+  #define E4_SLAVE_ADDRESS 0
+  #define E5_SLAVE_ADDRESS 0
 
   /**
    * Software enable
@@ -2559,7 +2556,7 @@
    * Define your own with:
    * { <off_time[1..15]>, <hysteresis_end[-3..12]>, hysteresis_start[1..8] }
    */
-  #define CHOPPER_TIMING CHOPPER_DEFAULT_12V        // All axes (override below)
+  #define CHOPPER_TIMING CHOPPER_DEFAULT_24V        // All axes (override below)
   //#define CHOPPER_TIMING_X  CHOPPER_DEFAULT_12V   // For X Axes (override below)
   //#define CHOPPER_TIMING_X2 CHOPPER_DEFAULT_12V
   //#define CHOPPER_TIMING_Y  CHOPPER_DEFAULT_12V   // For Y Axes (override below)
